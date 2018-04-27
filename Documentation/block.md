@@ -74,6 +74,12 @@ wordpress   10.3.0.155   <pending>     80:30841/TCP   2m
 
 You should see the wordpress app running.
 
+If you are using Minikube, the Wordpress URL can be retrieved with this one-line command:
+
+```console
+echo http://$(minikube ip):$(kubectl get service wordpress -o jsonpath='{.spec.ports[0].nodePort}')
+```
+
 **NOTE:** When running in a vagrant environment, there will be no external IP address to reach wordpress with.  You will only be able to reach wordpress via the `CLUSTER-IP` from inside the Kubernetes cluster.
 
 ## Consume the storage: Toolbox
