@@ -91,7 +91,7 @@ function check_context() {
 
 # configure minikube
 KUBE_VERSION=${KUBE_VERSION:-"v1.10.0"}
-MEMORY=${MEMORY:-"3000"}
+MEMORY=${MEMORY:-"4000"}
 
 case "${1:-}" in
   up)
