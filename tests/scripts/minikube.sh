@@ -112,6 +112,7 @@ case "${1:-}" in
     minikube ssh "sudo mkdir /mnt/sda1/var/lib/rook;sudo ln -s /mnt/sda1/var/lib/rook /var/lib/rook"
     copy_image_to_cluster ${BUILD_REGISTRY}/ceph-amd64 rook/ceph:master
     copy_image_to_cluster ${BUILD_REGISTRY}/cockroachdb-amd64 rook/cockroachdb:master
+    copy_image_to_cluster ${BUILD_REGISTRY}/minio-amd64 rook/minio:master
     copy_image_to_cluster ${BUILD_REGISTRY}/toolbox-amd64 rook/toolbox:master
     ;;
   down)
@@ -125,6 +126,7 @@ case "${1:-}" in
     echo "updating the rook images"
     copy_image_to_cluster ${BUILD_REGISTRY}/ceph-amd64 rook/ceph:master
     copy_image_to_cluster ${BUILD_REGISTRY}/cockroachdb-amd64 rook/cockroachdb:master
+    copy_image_to_cluster ${BUILD_REGISTRY}/minio-amd64 rook/minio:master
     copy_image_to_cluster ${BUILD_REGISTRY}/toolbox-amd64 rook/toolbox:master
     ;;
   restart)
@@ -147,6 +149,7 @@ case "${1:-}" in
     echo " copying rook image for helm"
     helm_tag="`cat _output/version`"
     copy_image_to_cluster ${BUILD_REGISTRY}/ceph-amd64 rook/ceph:${helm_tag}
+    copy_image_to_cluster ${BUILD_REGISTRY}/minio-amd64 rook/minio:${helm_tag}
     ;;
   clean)
     minikube delete
