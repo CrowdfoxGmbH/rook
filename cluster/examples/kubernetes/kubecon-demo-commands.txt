@@ -1,0 +1,96 @@
+SETUP:
+cd ${GOPATH}/src/github.com/rook/rook
+./tests/scripts/minikube.sh up
+minikube ssh -- "docker pull mysql:5.6;docker pull minio/minio:RELEASE.2018-04-19T22-54-58Z;docker pull cockroachdb/loadgen-kv:0.1;docker pull wordpress:4.6.1-apache"
+kubectl get node
+
+WATCH:
+watch -t -n1 'echo NAMESPACES && kubectl get ns && echo && \
+    echo ROOK-CEPH-SYSTEM PODS && kubectl get pods -n rook-ceph-system -o wide && echo && \
+    echo ROOK-CEPH PODS && kubectl get pods -n rook-ceph -o wide && echo && \
+    echo ROOK-COCKROACHDB-SYSTEM PODS && kubectl get pods -n rook-cockroachdb-system -o wide && echo && \
+    echo ROOK-COCKROACHDB PODS && kubectl get pods -n rook-cockroachdb -o wide && echo && \
+    echo ROOK-MINIO-SYSTEM PODS && kubectl get pods -n rook-minio-system -o wide && echo && \
+    echo ROOK-MINIO PODS && kubectl get pods -n rook-minio -o wide && echo && \
+    echo PODS && kubectl get pods -o wide && echo && \
+    echo PVC && kubectl get pvc --all-namespaces && \
+    echo && echo SVC && kubectl get svc && kubectl get svc --namespace=rook-ceph --no-headers && kubectl get svc --namespace=rook-cockroachdb --no-headers && kubectl get svc --namespace=rook-minio --no-headers  \
+    && echo && echo NODES && kubectl get nodes -o wide'
+
+
+CEPH:
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/ceph
+kubectl create -f operator.yaml
+kubectl -n rook-ceph-system get pod
+kubectl create -f cluster.yaml
+kubectl -n rook-ceph get clusters.ceph.rook.io
+kubectl -n rook-ceph get pod
+kubectl create -f storageclass.yaml
+kubectl create -f rook-tools.yaml
+kubectl -n rook-ceph exec -it rook-tools -- ceph -s
+
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes
+kubectl create -f mysql.yaml
+kubectl create -f wordpress.yaml
+kubectl -n default get pod
+kubectl -n default get pvc
+kubectl -n default get pv
+echo http://$(minikube ip):$(kubectl get service wordpress -o jsonpath='{.spec.ports[0].nodePort}')
+kubectl -n default delete pod $(kubectl -n default get pod -l app=wordpress,tier=mysql -o jsonpath='{.items[0].metadata.name}')
+kubectl -n default get pod
+
+
+COCKROACHDB:
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/cockroachdb
+kubectl create -f operator.yaml
+kubectl -n rook-cockroachdb-system get pod
+kubectl create -f cluster.yaml
+kubectl -n rook-cockroachdb get clusters.cockroachdb.rook.io
+kubectl -n rook-cockroachdb get pod -l app=cockroachdb
+kubectl -n rook-cockroachdb-system exec -it $(kubectl -n rook-cockroachdb-system get pod -l app=rook-cockroachdb-operator -o jsonpath='{.items[0].metadata.name}') -- /cockroach/cockroach sql --insecure --host=cockroachdb-public.rook-cockroachdb
+show databases;
+kubectl create -f loadgen-kv.yaml
+kubectl -n rook-cockroachdb logs -l app=loadgen
+kubectl -n rook-cockroachdb-system exec -it $(kubectl -n rook-cockroachdb-system get pod -l app=rook-cockroachdb-operator -o jsonpath='{.items[0].metadata.name}') -- /cockroach/cockroach sql --insecure --host=cockroachdb-public.rook-cockroachdb -d test -e 'select * from kv'
+
+
+MINIO:
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/minio
+kubectl create -f operator.yaml
+kubectl -n rook-minio-system get pod
+kubectl create -f object-store.yaml
+kubectl -n rook-minio get objectstores.minio.rook.io
+kubectl -n rook-minio get pod -l app=minio
+echo http://$(minikube ip):$(kubectl -n rook-minio get service my-store-service -o jsonpath='{.spec.ports[0].nodePort}')
+TEMP_DEMO_ACCESS_KEY
+TEMP_DEMO_SECRET_KEY
+
+
+TROUBLESHOOTING:
+kubectl -n rook-ceph-system logs -l app=rook-ceph-operator
+kubectl -n rook-cockroachdb-system logs -l app=rook-cockroachdb-operator
+kubectl -n rook-cockroachdb logs cockroachdb-0
+kubectl -n rook-minio-system logs -l app=rook-minio-operator
+
+
+CLEAN-UP:
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes
+kubectl delete -f mysql.yaml
+kubectl delete -f wordpress.yaml
+sleep 15
+
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/ceph
+kubectl delete -f storageclass.yaml
+kubectl delete -f rook-tools.yaml
+kubectl delete -f cluster.yaml
+sleep 15
+kubectl delete -f operator.yaml
+
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/cockroachdb
+kubectl delete -f loadgen-kv.yaml
+kubectl delete -f cluster.yaml
+kubectl delete -f operator.yaml
+
+cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/minio
+kubectl delete -f object-store.yaml
+kubectl delete -f operator.yaml
