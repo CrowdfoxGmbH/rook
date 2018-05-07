@@ -2,11 +2,12 @@ SETUP:
 cd ${GOPATH}/src/github.com/rook/rook
 ./tests/scripts/minikube.sh up
 minikube ssh -- "docker pull mysql:5.6;docker pull minio/minio:RELEASE.2018-04-19T22-54-58Z;docker pull cockroachdb/loadgen-kv:0.1;docker pull wordpress:4.6.1-apache"
+minikube ssh -- "sudo rm -fr /var/lib/rook/; sudo rm -fr /data/rook-storage/"
 kubectl get node
 
 WATCH:
-watch -t -n1 'echo NAMESPACES && kubectl get ns && echo && \
-    echo ROOK-CEPH-SYSTEM PODS && kubectl get pods -n rook-ceph-system -o wide && echo && \
+ALL:
+watch -t -n1 'echo ROOK-CEPH-SYSTEM PODS && kubectl get pods -n rook-ceph-system -o wide && echo && \
     echo ROOK-CEPH PODS && kubectl get pods -n rook-ceph -o wide && echo && \
     echo ROOK-COCKROACHDB-SYSTEM PODS && kubectl get pods -n rook-cockroachdb-system -o wide && echo && \
     echo ROOK-COCKROACHDB PODS && kubectl get pods -n rook-cockroachdb -o wide && echo && \
@@ -15,6 +16,16 @@ watch -t -n1 'echo NAMESPACES && kubectl get ns && echo && \
     echo PODS && kubectl get pods -o wide && echo && \
     echo PVC && kubectl get pvc --all-namespaces && \
     echo && echo SVC && kubectl get svc && kubectl get svc --namespace=rook-ceph --no-headers && kubectl get svc --namespace=rook-cockroachdb --no-headers && kubectl get svc --namespace=rook-minio --no-headers  \
+    && echo && echo NAMESPACES && kubectl get ns \
+    && echo && echo NODES && kubectl get nodes -o wide'
+
+CEPH ONLY:
+watch -t -n1 'echo ROOK-CEPH-SYSTEM PODS && kubectl get pods -n rook-ceph-system -o wide && echo && \
+    echo ROOK-CEPH PODS && kubectl get pods -n rook-ceph -o wide && echo && \
+    echo PODS && kubectl get pods -o wide && echo && \
+    echo PVC && kubectl get pvc --all-namespaces && \
+    echo && echo SVC && kubectl get svc && kubectl get svc --namespace=rook-ceph --no-headers \
+    && echo && echo NAMESPACES && kubectl get ns \
     && echo && echo NODES && kubectl get nodes -o wide'
 
 
@@ -71,6 +82,7 @@ kubectl -n rook-ceph-system logs -l app=rook-ceph-operator
 kubectl -n rook-cockroachdb-system logs -l app=rook-cockroachdb-operator
 kubectl -n rook-cockroachdb logs cockroachdb-0
 kubectl -n rook-minio-system logs -l app=rook-minio-operator
+kubectl -n rook-minio logs my-store-0
 
 
 CLEAN-UP:
@@ -85,6 +97,8 @@ kubectl delete -f rook-tools.yaml
 kubectl delete -f cluster.yaml
 sleep 15
 kubectl delete -f operator.yaml
+sleep 10
+minikube ssh -- "sudo rm -fr /var/lib/rook/; sudo rm -fr /data/rook-storage/"
 
 cd ${GOPATH}/src/github.com/rook/rook/cluster/examples/kubernetes/cockroachdb
 kubectl delete -f loadgen-kv.yaml
