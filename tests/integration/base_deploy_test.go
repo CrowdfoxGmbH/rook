@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/coreos/pkg/capnslog"
-	cephv1alpha1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1alpha1"
+	cephv1beta1 "github.com/rook/rook/pkg/apis/ceph.rook.io/v1beta1"
 	"github.com/rook/rook/tests/framework/clients"
 	"github.com/rook/rook/tests/framework/contracts"
 	"github.com/rook/rook/tests/framework/installer"
@@ -127,7 +127,7 @@ func StartBaseTestOperations(t func() *testing.T, namespace, storeType, dataDirH
 func (op BaseTestOperations) SetUp() {
 	isRookInstalled, err := op.installer.InstallRookOnK8sWithHostPathAndDevices(op.namespace, op.storeType,
 		op.dataDirHostPath, op.helmInstalled, op.useDevices,
-		cephv1alpha1.MonSpec{Count: op.mons, AllowMultiplePerNode: true}, false /* startWithAllNodes */)
+		cephv1beta1.MonSpec{Count: op.mons, AllowMultiplePerNode: true}, false /* startWithAllNodes */)
 	assert.NoError(op.T(), err)
 	if !isRookInstalled {
 		logger.Errorf("Rook was not installed successfully")
