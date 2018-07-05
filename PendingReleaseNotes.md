@@ -2,7 +2,7 @@
 
 ## Action Required
 
-- Existing clusters that are running previous versions of Rook will need to be upgraded/migrated to be compatible with the `v0.8` operator and to begin using the new `rook.io/v1alpha2` and `ceph.rook.io/v1alpha1` CRD types.  Please follow the instructions in the [upgrade user guide](Documentation/upgrade.md) to successfully migrate your existing Rook cluster to the new release, as it has been updated with specific steps to help you upgrade to `v0.8`.
+- Existing clusters that are running previous versions of Rook will need to be upgraded/migrated to be compatible with the `v0.8` operator and to begin using the new `rook.io/v1alpha2` and `ceph.rook.io/v1beta1` CRD types.  Please follow the instructions in the [upgrade user guide](Documentation/upgrade.md) to successfully migrate your existing Rook cluster to the new release, as it has been updated with specific steps to help you upgrade to `v0.8`.
 
 ## Notable Features
 
@@ -24,7 +24,7 @@
 - Removed support for Kubernetes 1.6, including the legacy Third Party Resources (TPRs).
 - Various paths and resources have changed to accommodate multiple backends:
   - Examples: The yaml files for creating a Ceph cluster can be found in `cluster/examples/kubernetes/ceph`. The yaml files that are backend-independent will still be found in the `cluster/examples/kubernetes` folder.
-  - CRDs: The `apiVersion` of the Rook CRDs are now backend-specific, such as `ceph.rook.io/v1alpha1` instead of `rook.io/v1alpha1`.
+  - CRDs: The `apiVersion` of the Rook CRDs are now backend-specific, such as `ceph.rook.io/v1beta1` instead of `rook.io/v1alpha1`.
   - Cluster CRD: The Ceph cluster CRD has had several properties restructured for consistency with other backend CRDs that will be coming soon. Rook will automatically upgrade the previous Ceph CRD versions to the new versions with all the compatible properties. When creating the cluster CRD based on the new `ceph.rook.io` apiVersion you will need to take note of the new settings structure.
   - Container images: The container images for Ceph and the toolbox are now `rook/ceph` and `rook/ceph-toolbox`.  The steps in the [upgrade user guide](Documentation/upgrade.md) will automatically start using these new images for your cluster.
   - Namespaces: The example namespaces are now backend-specific. Instead of `rook-system` and `rook`, you will see `rook-ceph-system` and `rook-ceph`.

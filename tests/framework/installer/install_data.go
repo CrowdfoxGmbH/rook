@@ -368,7 +368,7 @@ subjects:
 
 //GetRookCluster returns rook-cluster manifest
 func (i *InstallData) GetRookCluster(namespace, storeType, dataDirHostPath string, useAllDevices bool, mons int) string {
-	return `apiVersion: ceph.rook.io/v1alpha1
+	return `apiVersion: ceph.rook.io/v1beta1
 kind: Cluster
 metadata:
   name: ` + namespace + `

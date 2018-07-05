@@ -143,6 +143,12 @@ kubectl delete clusterroles rook-agent
 kubectl delete clusterrolebindings rook-agent
 ```
 
+#### master:
+```bash
+kubectl -n rook-ceph-system delete daemonset rook-ceph-agent
+kubectl -n rook-ceph-system delete daemonset rook-discover
+```
+
 Now when the operator is recreated, the agent daemonset will automatically be created again with the new version.
 
 ### Operator Access to Clusters
@@ -213,6 +219,11 @@ Let's delete the deployment for the old operator and its permissions first:
 kubectl -n rook-system delete deployment rook-operator
 kubectl delete clusterroles rook-operator
 kubectl delete clusterrolebindings rook-operator
+```
+
+#### master:
+```bash
+kubectl -n rook-ceph-system delete deployment rook-ceph-operator
 ```
 
 Now we need to create the new Ceph specific operator.
